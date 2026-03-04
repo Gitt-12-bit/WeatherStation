@@ -1,15 +1,13 @@
-from flask import Flask 
+from flask import Flask
 from .config import Config
-
-from os import name    
-from .functions import DB 
-from .mqtt import MQTT  
-
-# Create MongoDB instance to get access to all the functions defined in functions.py
-mongo = DB(Config)
-Mqtt  = MQTT(mongo)
+from .functions import DB
 
 app = Flask(__name__)
-app.config.from_object(Config) 
+mongo = DB(Config)
 
-from app import views
+try:
+    from .mqtt import Mqtt
+except ImportError:
+    Mqtt = None
+
+from . import views

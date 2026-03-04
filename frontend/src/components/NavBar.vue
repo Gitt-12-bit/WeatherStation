@@ -1,4 +1,4 @@
-  <template>
+ <template>
          <VToolbar flat density="compact" color="surface" height="100" >
             <VContainer fluid>
                     <VRow align="center" justify="center">
@@ -8,11 +8,40 @@
 
                         <VCol cols="10"  align="center"   > 
 
-                            <RouterLink class="route" :to="{ name: 'Home' }" >
-                                <VBtn class="text-subtitle-2"   density="compact"  color="primary" :variant="(route.name == 'Home')? 'tonal':'text'">Home</VBtn>
-                            </RouterLink>
 
                             <!-- Add Links Below --> 
+                            <RouterLink class="route" :to="{ name: 'Control' }">
+                                <VBtn
+                                    class="text-subtitle-2"
+                                    density="compact"
+                                    color="primary"
+                                    :variant="(route.name == 'Control') ? 'tonal' : 'text'"
+                                >
+                                Control
+                                </VBtn>
+                            </RouterLink>
+
+                            <RouterLink class="route" :to="{ name: 'Dashboard' }">
+                                <VBtn
+                                    class="text-subtitle-2"
+                                    density="compact"
+                                    color="primary"
+                                    :variant="(route.name == 'Dashboard') ? 'tonal' : 'text'"
+                                >
+                                Dashboard
+                                </VBtn>
+                            </RouterLink>
+
+                            <RouterLink class="route" :to="{ name: 'Analysis' }">
+                                <VBtn
+                                    class="text-subtitle-2"
+                                    density="compact"
+                                    color="primary"
+                                    :variant="(route.name == 'Analysis') ? 'tonal' : 'text'"
+                                > 
+                                Analysis
+                                </VBtn>
+                            </RouterLink>
 
                         </VCol>
                         <VCol cols="1" align="right">

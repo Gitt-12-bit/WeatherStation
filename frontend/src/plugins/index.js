@@ -1,21 +1,8 @@
-/**
- * plugins/index.js
- *
- * Automatically included in `./src/main.js`
- */
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
 
-// Plugins
-import vuetify from './vuetify'
-import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-import router from '../router'
-
-const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
-
-export function registerPlugins (app) {
-  app
-    .use(vuetify)
-    .use(router)
-    .use(pinia)
+export function registerPlugins(app) {
+  const vuetify = createVuetify()
+  app.use(vuetify)
+  console.log("Vuetify initialized")
 }

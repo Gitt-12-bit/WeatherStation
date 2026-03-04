@@ -1,13 +1,17 @@
-// Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '@/views/Home.vue'
+import Control from '@/views/Control.vue'
+import Dashboard from '@/views/Dashboard.vue'
+import Analysis from '@/views/Analysis.vue'
 
 const routes = [
-  { path: '/', name: 'Home', component: () => import('@/views/Home.vue'), meta:{ transition: 'fade'} },  
+  { path: '/',          name: 'Home',      component: Home      },
+  { path: '/control',   name: 'Control',   component: Control   },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/analysis',  name: 'Analysis',  component: Analysis  },
 ]
 
-const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
-  routes,
+export default createRouter({
+  history: createWebHistory(),
+  routes
 })
-
-export default router

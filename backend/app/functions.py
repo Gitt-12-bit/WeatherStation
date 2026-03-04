@@ -47,27 +47,69 @@ class DB:
  
 
 
-    ####################
+####################
     # LAB 4 FUNCTIONS  #
     ####################
     
     # 1. CREATE FUNCTION TO INSERT DATA IN TO THE RADAR COLLECTION
+    def insert_radar_data(self, data):
+        try:
+            remotely = self.remoteMongo(f"mongodb://{self.username}:{self.password}@{self.server}:{self.port}")
+            db = remotely.ELET2415
+            return db.radar.insert_one(data)
+        except self.PyMongoError as e:
+            print(f"Insert Error: {e}")
+            return None
 
+    # 2. CREATE FUNCTION TO RETRIEVE ALL DOCUMENTS FROM RADAR COLLECT BETWEEN SPECIFIED DATE RANGE
+    def get_radar_range(self, start, end):
+        try:
+            remotely = self.remoteMongo(f"mongodb://{self.username}:{self.password}@{self.server}:{self.port}")
+            db = remotely.ELET2415
+            return list(db.radar.find({"timestamp": {"$gte": int(start), "$lte": int(end)}}, {"_id": 0}))
+        except self.PyMongoError as e:
+            print(f"Range Error: {e}")
+            return []
+
+    # 3. CREATE A FUNCTION TO COMPUTE THE ARITHMETIC AVERAGE ON THE 'reserve' FIELD
+    def get_reserve_average(self, start, end):
+        try:
+            remotely = self.remoteMongo(f"mongodb://{self.username}:{self.password}@{self.server}:{self.port}")
+            db = remotely.ELET2415
+            pipeline = [
+                {"$match": {"timestamp": {"$gte": int(start), "$lte": int(end)}}},
+                {"$group": {"_id": None, "average": {"$avg": "$reserve"}}},
+                {"$project": {"_id": 0, "average": 1}}
+            ]
+            return list(db.radar.aggregate(pipeline))
+        except self.PyMongoError as e:
+            print(f"Average Error: {e}")
+            return []
     
-    # 2. CREATE FUNCTION TO RETRIEVE ALL DOCUMENTS FROM RADAR COLLECT BETWEEN SPECIFIED DATE RANGE. MUST RETURN A LIST OF DOCUMENTS
-
-
-    # 3. CREATE A FUNCTION TO COMPUTE THE ARITHMETIC AVERAGE ON THE 'reserve' FEILED/VARIABLE, USING ALL DOCUMENTS FOUND BETWEEN SPECIFIED START AND END TIMESTAMPS. RETURNS A LIST WITH A SINGLE OBJECT INSIDE
+    # 4. CREATE A FUNCTION THAT INSERT/UPDATE A SINGLE DOCUMENT IN THE 'code' COLLECTION
+    def set_passcode(self, passcode):
+        try:
+            remotely = self.remoteMongo(f"mongodb://{self.username}:{self.password}@{self.server}:{self.port}")
+            db = remotely.ELET2415
+            return db.code.find_one_and_update(
+                {"type": "passcode"},
+                {"$set": {"code": passcode}},
+                upsert=True,
+                return_document=self.ReturnDocument.AFTER
+            )
+        except self.PyMongoError as e:
+            print(f"Set Passcode Error: {e}")
+            return None
     
-    
-    # 4. CREATE A FUNCTION THAT INSERT/UPDATE A SINGLE DOCUMENT IN THE 'code' COLLECTION WITH THE PROVIDED PASSCODE
-   
-    
-    # 5. CREATE A FUNCTION THAT RETURNS A COUNT, OF THE NUMBER OF DOCUMENTS FOUND IN THE 'code' COLLECTION WHERE THE 'code' FEILD EQUALS TO THE PROVIDED PASSCODE.
-    #    REMEMBER, THE SCHEMA FOR THE SINGLE DOCUMENT IN THE 'code' COLLECTION IS {"type":"passcode","code":"0070"}
-
-
-   
+    # 5. CREATE A FUNCTION THAT RETURNS A COUNT OF DOCUMENTS MATCHING THE PASSCODE
+    def check_passcode(self, passcode):
+        try:
+            remotely = self.remoteMongo(f"mongodb://{self.username}:{self.password}@{self.server}:{self.port}")
+            db = remotely.ELET2415
+            return db.code.count_documents({"type": "passcode", "code": passcode})
+        except self.PyMongoError as e:
+            print(f"Check Passcode Error: {e}")
+            return 0
 
 
 

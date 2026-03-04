@@ -25,25 +25,65 @@ from math import floor
 #   Routing for your application    #
 #####################################
 
-
 # 1. CREATE ROUTE FOR '/api/set/combination'
+@app.route('/api/set/combination', methods=['POST'])
+def set_combination():
+    if request.method == "POST":
+        passcode = request.form.get('passcode')
+        print("Passcode received:", passcode)          # ← add this
+        if passcode and passcode.isdigit() and len(passcode) == 4:
+            result = mongo.set_passcode(passcode)
+            print("Mongo result:", result)             # ← add this
+            if result:
+                return jsonify({"status": "complete", "data": "complete"})
+    return jsonify({"status": "failed", "data": "failed"})
     
 # 2. CREATE ROUTE FOR '/api/check/combination'
+@app.route('/api/check/combination', methods=['POST'])
+def check_combination():
+    if request.method == "POST":
+        passcode = request.form.get('passcode')
+        if mongo.check_passcode(passcode):
+            return jsonify({"status": "complete", "data": "complete"})
+    return jsonify({"status": "failed", "data": "failed"})
 
 # 3. CREATE ROUTE FOR '/api/update'
+@app.route('/api/update', methods=['POST'])
+def update_radar():
+    if request.method == "POST":
+        print("Raw data received:", request.data)      # ← add this
+        print("Content-Type:", request.content_type)   # ← add this
+        json_data = request.get_json()
+        print("Parsed JSON:", json_data)
+        if json_data:
+            # Add timestamp and publish to MQTT
+            json_data['timestamp'] = int(time())
+            Mqtt.publish("620171757", dumps(json_data)) # Publish to your specific ID
+            
+            if mongo.insert_radar_data(json_data):
+                return jsonify({"status": "complete", "data": "complete"})
+    return jsonify({"status": "failed", "data": "failed"})
    
 # 4. CREATE ROUTE FOR '/api/reserve/<start>/<end>'
+@app.route('/api/reserve/<start>/<end>', methods=['GET'])
+def get_reserve(start, end):
+    if request.method == "GET":
+        data = mongo.get_radar_range(start, end)
+        if data:
+            return jsonify({"status": "found", "data": data})
+    return jsonify({"status": "failed", "data": []})
 
 # 5. CREATE ROUTE FOR '/api/avg/<start>/<end>'
-
-
+@app.route('/api/avg/<start>/<end>', methods=['GET'])
+def get_avg(start, end):
+    if request.method == "GET":
+        avg_list = mongo.get_reserve_average(start, end)
+        if avg_list:
+            return jsonify({"status": "found", "data": avg_list[0]['average']})
+    return jsonify({"status": "failed", "data": 0})
    
 
-
-
-
-
-
+   
 @app.route('/api/file/get/<filename>', methods=['GET']) 
 def get_images(filename):   
     '''Returns requested file from uploads folder'''

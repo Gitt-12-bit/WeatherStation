@@ -1,4 +1,4 @@
-
+import os
 from os import  environ
 from os.path import  abspath, dirname 
 from dotenv import load_dotenv
@@ -8,6 +8,22 @@ basedir = abspath(dirname(__file__))
 
 class Config(object):
     """Base Config Object"""
+    FLASK_DEBUG = os.getenv("FLASK_DEBUG", "False") == "True"
+    
+    # Use safe defaults if env vars are missing
+    FLASK_RUN_HOST = os.getenv("FLASK_RUN_HOST", "127.0.0.1")
+    FLASK_RUN_PORT = int(os.getenv("FLASK_RUN_PORT", 5000))
+
+    # Your MongoDB/other configs
+    DB_USERNAME = os.getenv("DB_USERNAME", "user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "pass")
+    DB_NAME = os.getenv("DB_NAME", "homeautomation")
+    
+    
+    MQTT_HOST = os.getenv("MQTT_HOST", "127.0.0.1")
+    MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+    MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
+    MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
     
 
     FLASK_DEBUG                             = eval(environ.get('DEBUG','False'))
