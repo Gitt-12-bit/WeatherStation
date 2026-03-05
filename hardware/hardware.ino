@@ -66,12 +66,12 @@ static const char* mqtt_server   = "www.yanacreations.com";
 static uint16_t    mqtt_port     = 1883;
 
 // WIFI CREDENTIALS - UPDATE THESE TO MATCH YOUR NETWORK
-const char* ssid     = "Galaxyy";
-const char* password = "wweg0048";
+const char* ssid     = "MonaConnect";
+const char* password = "";
 
 // BACKEND IP - UPDATE THIS TO YOUR COMPUTER'S LOCAL IPv4 ADDRESS
 // Run 'ipconfig' in Windows terminal and look for IPv4 Address under your WiFi adapter
-const char* backendIP = "10.94.187.105";  // <-- CHANGE THIS
+const char* backendIP = "10.94.187.105";  
 
 // TASK HANDLES
 TaskHandle_t xButtonCheckeHandle = NULL;

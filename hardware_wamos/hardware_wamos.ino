@@ -8,8 +8,8 @@
 #define route       "api/update"
 #define idNumber    "620171757"
 
-#define SSID        "Galaxyy"
-#define password    "wweg0048"
+#define SSID        "MonaConnect"
+#define password    ""
 
 #define stay        100
 

@@ -51,14 +51,14 @@ def check_combination():
 @app.route('/api/update', methods=['POST'])
 def update_radar():
     if request.method == "POST":
-        print("Raw data received:", request.data)      # ← add this
-        print("Content-Type:", request.content_type)   # ← add this
+        print("Raw data received:", request.data)     
+        print("Content-Type:", request.content_type)   
         json_data = request.get_json()
         print("Parsed JSON:", json_data)
         if json_data:
             # Add timestamp and publish to MQTT
             json_data['timestamp'] = int(time())
-            Mqtt.publish("620171757", dumps(json_data)) # Publish to your specific ID
+            Mqtt.publish("620171757", dumps(json_data)) 
             
             if mongo.insert_radar_data(json_data):
                 return jsonify({"status": "complete", "data": "complete"})

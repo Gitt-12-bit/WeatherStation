@@ -70,7 +70,7 @@ export default {
     const params = new URLSearchParams()
     params.append('passcode', String(this.passcode))
     
-    console.log('Sending passcode:', this.passcode)  // ← add this to verify
+    console.log('Sending passcode:', this.passcode)  
 
     const res = await axios.post('/api/set/combination', params.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
