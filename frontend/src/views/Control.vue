@@ -1,97 +1,26 @@
 <template>
-  <v-container>
-    <v-row justify="center">
-      <v-col cols="12" md="8">
-        <v-card class="pa-8" elevation="2" rounded="lg">
-          <v-card-title class="text-center text-h6 font-weight-regular mb-1">
-            Combination
-          </v-card-title>
-          <v-card-subtitle class="text-center mb-6">
-            Enter your four digit passcode
-          </v-card-subtitle>
+  <v-app theme="dark">
+    <v-app-bar flat color="#050d14" border="bottom">
+      <v-toolbar-title class="font-weight-bold text-cyan">WEATHER OS</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn @click="view = 'home'" :color="view === 'home' ? 'cyan' : ''">Home</v-btn>
+      <v-btn @click="view = 'dash'" :color="view === 'dash' ? 'cyan' : ''">Dashboard</v-btn>
+      <v-btn @click="view = 'analysis'" :color="view === 'analysis' ? 'cyan' : ''">Analysis</v-btn>
+    </v-app-bar>
 
-          <div class="d-flex justify-center mb-6">
-            <v-otp-input
-              v-model="passcode"
-              length="4"
-              type="number"
-              variant="outlined"
-              focus-all
-            ></v-otp-input>
-          </div>
-
-          <div class="d-flex justify-center">
-            <v-btn color="primary" @click="sendPasscode" :loading="loading">
-              SUBMIT
-            </v-btn>
-          </div>
-
-          <v-alert
-            v-if="message"
-            :type="messageType"
-            class="mt-4"
-            density="compact"
-            closable
-            @click:close="message = ''"
-          >
-            {{ message }}
-          </v-alert>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+    <v-main class="bg-black">
+      <HomeView v-if="view === 'home'" @start="view = 'dash'" />
+      <DashboardView v-if="view === 'dash'" />
+      <AnalysisView v-if="view === 'analysis'" />
+    </v-main>
+  </v-app>
 </template>
 
-<script>
-import axios from 'axios'
+<script setup>
+import { ref } from 'vue';
+import HomeView from './components/Home.vue';
+import DashboardView from './components/Dashboard.vue';
+import AnalysisView from './components/Analysis.vue';
 
-export default {
-  name: 'Control',
-  data() {
-    return {
-      passcode: '',
-      loading: false,
-      message: '',
-      messageType: 'success',
-    }
-  },
-  methods: {
-    async sendPasscode() {
-      if (!this.passcode || this.passcode.length !== 4 || isNaN(Number(this.passcode))) {
-        this.message = 'Please enter a valid 4-digit numeric passcode.'
-        this.messageType = 'warning'
-      return
-  }
-
-  this.loading = true
-  this.message = ''
-
-  try {
-    const params = new URLSearchParams()
-    params.append('passcode', String(this.passcode))
-    
-    console.log('Sending passcode:', this.passcode)  
-
-    const res = await axios.post('/api/set/combination', params.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    })
-
-    if (res.data.status === 'complete') {
-      this.message = 'Passcode saved successfully!'
-      this.messageType = 'success'
-      this.passcode = ''
-    } else {
-      this.message = 'Failed to save passcode. Please try again.'
-      this.messageType = 'error'
-    }
-  } catch (err) {
-    console.error(err)
-    this.message = 'Error connecting to backend.'
-    this.messageType = 'error'
-  } finally {
-    this.loading = false
-  }
-}
-  }
-}
+const view = ref('home');
 </script>

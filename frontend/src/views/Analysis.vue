@@ -1,214 +1,187 @@
 <template>
-  <v-container fluid>
-
-    <!-- Top Row: Date Pickers + Average Card -->
-    <v-row class="mb-4" align="start">
-
-      <!-- Date Range Inputs -->
-      <v-col cols="12" sm="4">
-        <v-card class="pa-4" elevation="1" rounded="lg">
-          <v-text-field
-            v-model="startDate"
-            label="Start Date"
-            type="date"
-            density="compact"
-            variant="outlined"
-            class="mb-3"
-            prepend-inner-icon="mdi:mdi-calendar"
-          ></v-text-field>
-
-          <v-text-field
-            v-model="endDate"
-            label="End Date"
-            type="date"
-            density="compact"
-            variant="outlined"
-            class="mb-4"
-            prepend-inner-icon="mdi:mdi-calendar"
-          ></v-text-field>
-
-          <v-btn
-            color="primary"
-            variant="tonal"
-            @click="runAnalysis"
-            :loading="loading"
-            block
-          >
-            Analyze
+  <v-container fluid class="pa-6">
+    <v-row>
+      <v-col cols="12" md="4">
+        <v-card class="pa-4 ctrl-card">
+          <div class="section-label">Range Selection</div>
+          <div class="date-row">
+            <label class="date-label">From</label>
+            <input type="date" v-model="start" class="date-input" />
+          </div>
+          <div class="date-row mt-2">
+            <label class="date-label">To</label>
+            <input type="date" v-model="end" class="date-input" />
+          </div>
+          <v-btn block color="cyan" variant="outlined" @click="getHistory" :loading="loading" class="mt-4">
+            Run Analysis
           </v-btn>
-        </v-card>
-      </v-col>
-
-      <!-- Average Display Card -->
-      <v-col cols="12" sm="4">
-        <v-card class="pa-6 text-center" elevation="1" rounded="lg" min-height="160">
-          <div class="text-subtitle-1 font-weight-medium mb-1">Average</div>
-          <div class="text-caption text-medium-emphasis mb-4">For the selected period</div>
-          <div class="d-flex align-end justify-center">
-            <span class="text-h2 font-weight-bold">{{ displayAverage }}</span>
-            <span class="text-subtitle-1 ml-1 mb-2 text-medium-emphasis">Gal</span>
+          <div v-if="dataRows.length" class="stats-summary mt-4">
+            <div class="summary-title">SUMMARY</div>
+            <div class="summary-row"><span>Avg Temp</span><span style="color:#ff6b6b">{{ avgTemp }}°C</span></div>
+            <div class="summary-row"><span>Avg Humidity</span><span style="color:#00d4ff">{{ avgHum }}%</span></div>
+            <div class="summary-row"><span>Avg Pressure</span><span style="color:#00ff9d">{{ avgPres }} hPa</span></div>
+            <div class="summary-row"><span>Records</span><span style="color:#ffb700">{{ dataRows.length }}</span></div>
           </div>
         </v-card>
       </v-col>
 
+      <v-col cols="12" md="8">
+        <v-card class="pa-4 chart-card">
+          <div class="chart-title">TEMPERATURE OVER RANGE</div>
+          <div style="position:relative; height:220px">
+            <canvas ref="tempChart"></canvas>
+          </div>
+        </v-card>
+        <v-card class="pa-4 chart-card mt-4">
+          <div class="chart-title">HUMIDITY & PRESSURE OVER RANGE</div>
+          <div style="position:relative; height:220px">
+            <canvas ref="humPresChart"></canvas>
+          </div>
+        </v-card>
+      </v-col>
     </v-row>
 
-    <!-- Alert for errors -->
-    <v-alert
-      v-if="errorMsg"
-      type="error"
-      class="mb-4"
-      density="compact"
-      closable
-      @click:close="errorMsg = ''"
-    >
-      {{ errorMsg }}
-    </v-alert>
-
-    <!-- Line Chart: Water Management Analysis -->
-    <v-sheet rounded="lg" elevation="1" class="mb-6">
-      <div id="lineChart" style="width:100%; height:360px;"></div>
-    </v-sheet>
-
-    <!-- Scatter Plot: Height & Water Level Correlation -->
-    <v-sheet rounded="lg" elevation="1">
-      <div id="scatterChart" style="width:100%; height:360px;"></div>
-    </v-sheet>
-
+    <v-card class="mt-4 table-card">
+      <v-card-title class="section-label pa-4">HISTORICAL DATA</v-card-title>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Temp (°C)</th>
+              <th>Humidity (%)</th>
+              <th>Pressure (hPa)</th>
+              <th>Soil (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="dataRows.length === 0">
+              <td colspan="5" style="text-align:center; color:#4a6880; padding:24px;">
+                No data — select a date range and click Run Analysis
+              </td>
+            </tr>
+            <tr v-for="row in dataRows" :key="row.timestamp">
+              <td class="time-val">{{ new Date(row.timestamp * 1000).toLocaleString() }}</td>
+              <td class="temp-val">{{ row.temp?.toFixed(1) }}</td>
+              <td class="hum-val">{{ row.hum?.toFixed(1) }}</td>
+              <td class="pres-val">{{ row.pres?.toFixed(1) }}</td>
+              <td class="soil-val">{{ row.soil }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </v-card>
   </v-container>
 </template>
 
-<script>
-import axios from 'axios'
-import Highcharts from 'highcharts'
+<script setup>
+import { ref, computed, onUnmounted } from 'vue';
+import Chart from 'chart.js/auto';
 
-export default {
-  name: 'Analysis',
-  data() {
-    return {
-      startDate: '',
-      endDate: '',
-      average: null,
-      loading: false,
-      errorMsg: '',
-      lineChartInstance: null,
-      scatterChartInstance: null,
-    }
-  },
-  computed: {
-    displayAverage() {
-      if (this.average === null) return '—'
-      return Number(this.average).toFixed(1)
-    }
-  },
-  mounted() {
-    this.initCharts()
-  },
-  methods: {
-    // Convert a date string like "2024-01-31" to a 10-digit Unix timestamp (start of day)
-    dateToTimestamp(dateStr) {
-      if (!dateStr) return null
-      return Math.floor(new Date(dateStr).getTime() / 1000)
-    },
+const API_BASE = 'http://10.194.108.105:8080';
+const start = ref('');
+const end = ref('');
+const dataRows = ref([]);
+const loading = ref(false);
+const tempChart = ref(null);
+const humPresChart = ref(null);
+let chartT = null;
+let chartHP = null;
 
-    initCharts() {
-      this.lineChartInstance = Highcharts.chart('lineChart', {
-        title: { text: 'Water Management Analysis', align: 'left' },
-        xAxis: {
-          type: 'datetime',
-          title: { text: 'Time' }
-        },
-        yAxis: {
-          title: { text: 'Water Reserve' },
-          labels: { format: '{value} Gal' },
-          min: 0
-        },
-        series: [{
-          type: 'line',
-          name: 'Reserve',
-          data: [],
-          color: '#29b6f6'
-        }],
-        credits: { enabled: true }
-      })
+const avgTemp = computed(() => dataRows.value.length ? (dataRows.value.reduce((s, r) => s + r.temp, 0) / dataRows.value.length).toFixed(1) : '--');
+const avgHum  = computed(() => dataRows.value.length ? (dataRows.value.reduce((s, r) => s + r.hum,  0) / dataRows.value.length).toFixed(1) : '--');
+const avgPres = computed(() => dataRows.value.length ? (dataRows.value.reduce((s, r) => s + r.pres, 0) / dataRows.value.length).toFixed(1) : '--');
 
-      this.scatterChartInstance = Highcharts.chart('scatterChart', {
-        chart: { type: 'scatter' },
-        title: { text: 'Height and Water Level Correlation Analysis', align: 'left' },
-        xAxis: {
-          title: { text: 'Water Height' },
-          labels: { format: '{value} in' }
-        },
-        yAxis: {
-          title: { text: 'Height' },
-          labels: { format: '{value} in' }
-        },
-        tooltip: {
-          pointFormat: 'Water Height: <b>{point.x} in</b><br>Radar: <b>{point.y} in</b>'
-        },
-        series: [{
-          name: 'Analysis',
-          data: [],
-          color: '#42a5f5',
-          marker: { radius: 4 }
-        }],
-        credits: { enabled: true }
-      })
-    },
-
-    async runAnalysis() {
-      if (!this.startDate || !this.endDate) {
-        this.errorMsg = 'Please select both a start and end date.'
-        return
-      }
-
-      // Convert dates to 10-digit Unix timestamps
-      const startTs = this.dateToTimestamp(this.startDate)
-      // End of the end date (add 86399 seconds to include the full day)
-      const endTs = this.dateToTimestamp(this.endDate) + 86399
-
-      this.loading = true
-      this.errorMsg = ''
-
-      try {
-        // Fetch reserve data and average in parallel
-        const [reserveRes, avgRes] = await Promise.all([
-          axios.get(`/api/reserve/${startTs}/${endTs}`),
-          axios.get(`/api/avg/${startTs}/${endTs}`)
-        ])
-
-        // Update average
-        if (avgRes.data.status === 'found') {
-          this.average = avgRes.data.data
-        } else {
-          this.average = 0
-        }
-
-        // Update charts
-        if (reserveRes.data.status === 'found') {
-          const records = reserveRes.data.data
-
-          // Line chart: timestamp (ms) vs reserve
-          const lineData = records.map(d => [d.timestamp * 1000, d.reserve])
-
-          // Scatter: waterheight (x) vs radar (y)
-          const scatterData = records.map(d => [d.waterheight, d.radar])
-
-          this.lineChartInstance.series[0].setData(lineData, true)
-          this.scatterChartInstance.series[0].setData(scatterData, true)
-        } else {
-          this.errorMsg = 'No data found for the selected date range.'
-          this.lineChartInstance.series[0].setData([], true)
-          this.scatterChartInstance.series[0].setData([], true)
-        }
-
-      } catch (err) {
-        console.error(err)
-        this.errorMsg = 'Failed to fetch data. Check backend connectivity.'
-      } finally {
-        this.loading = false
-      }
-    }
+async function getHistory() {
+  if (!start.value || !end.value) return;
+  loading.value = true;
+  const sTs = Math.floor(new Date(start.value).getTime() / 1000);
+  const eTs = Math.floor(new Date(end.value).getTime() / 1000) + 86399;
+  try {
+    const res = await fetch(`${API_BASE}/api/weather/${sTs}/${eTs}`);
+    const json = await res.json();
+    dataRows.value = (json.data || []).sort((a, b) => a.timestamp - b.timestamp);
+    updateCharts();
+  } catch (e) {
+    console.error('History fetch failed', e);
+  } finally {
+    loading.value = false;
   }
 }
+
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#4a6880', font: { size: 11 } } } },
+  scales: {
+    x: { ticks: { color: '#4a6880', maxTicksLimit: 8 }, grid: { color: 'rgba(26,48,72,0.5)' } },
+    y: { ticks: { color: '#4a6880' }, grid: { color: 'rgba(26,48,72,0.5)' } }
+  }
+};
+
+function updateCharts() {
+  const labels = dataRows.value.map(r => new Date(r.timestamp * 1000).toLocaleDateString());
+
+  if (chartT) chartT.destroy();
+  chartT = new Chart(tempChart.value, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label: 'Temp °C', data: dataRows.value.map(r => r.temp), borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,0.08)', tension: 0.4, pointRadius: 2 }]
+    },
+    options: chartDefaults
+  });
+
+  if (chartHP) chartHP.destroy();
+  chartHP = new Chart(humPresChart.value, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Hum %',    data: dataRows.value.map(r => r.hum),  borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',  tension: 0.4, pointRadius: 2, yAxisID: 'y' },
+        { label: 'Pres hPa', data: dataRows.value.map(r => r.pres), borderColor: '#00ff9d', backgroundColor: 'rgba(0,255,157,0.08)', tension: 0.4, pointRadius: 2, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: chartDefaults.scales.x,
+        y:  { ...chartDefaults.scales.y, position: 'left' },
+        y1: { ...chartDefaults.scales.y, position: 'right', grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+onUnmounted(() => { chartT?.destroy(); chartHP?.destroy(); });
 </script>
+
+<style scoped>
+.ctrl-card, .chart-card, .table-card { background: #0f1e2e !important; border: 1px solid #1a3048 !important; border-radius: 12px; }
+.section-label { font-size: 0.7rem; letter-spacing: 0.12em; color: #4a6880; text-transform: uppercase; margin-bottom: 12px; }
+.chart-title { font-size: 0.7rem; letter-spacing: 0.12em; color: #4a6880; text-transform: uppercase; margin-bottom: 12px; }
+.date-label { font-size: 0.7rem; color: #4a6880; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
+.date-input {
+  width: 100%; padding: 8px 10px;
+  background: #0b1622; border: 1px solid #1a3048;
+  border-radius: 6px; color: #c8dff0;
+  font-family: 'Courier New', monospace; font-size: 0.85rem;
+  outline: none;
+}
+.date-input:focus { border-color: #00d4ff; }
+.date-row { display: flex; flex-direction: column; }
+.stats-summary { border-top: 1px solid #1a3048; padding-top: 12px; }
+.summary-title { font-size: 0.65rem; letter-spacing: 0.12em; color: #4a6880; text-transform: uppercase; margin-bottom: 8px; }
+.summary-row { display: flex; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #8892b0; padding: 3px 0; }
+.table-wrap { overflow-x: auto; max-height: 320px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+thead th { font-family: 'Courier New', monospace; font-size: 0.65rem; letter-spacing: 0.1em; color: #4a6880; text-align: left; padding: 10px 14px; border-bottom: 1px solid #1a3048; position: sticky; top: 0; background: #0f1e2e; text-transform: uppercase; }
+tbody tr { border-bottom: 1px solid rgba(26,48,72,0.5); transition: background 0.15s; }
+tbody tr:hover { background: rgba(0,212,255,0.04); }
+tbody td { padding: 9px 14px; font-family: 'Courier New', monospace; font-size: 0.78rem; }
+.time-val { color: #4a6880; }
+.temp-val { color: #ff6b6b; }
+.hum-val  { color: #00d4ff; }
+.pres-val { color: #00ff9d; }
+.soil-val { color: #ffb700; }
+</style>

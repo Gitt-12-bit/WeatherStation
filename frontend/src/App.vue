@@ -1,88 +1,39 @@
 <template>
-   
-  <VApp class="bg-background"> 
-    <NavBar />
+  <v-app theme="dark">
+    <v-app-bar flat color="#050d14" border="bottom" elevation="2">
+      <v-app-bar-title>
+        <span style="font-weight:bold; color:#00bcd4; letter-spacing:2px;">WEATHER OS</span>
+      </v-app-bar-title>
+      <v-btn 
+        v-for="item in navItems" 
+        :key="item.key"
+        @click="view = item.key"
+        :variant="view === item.key ? 'tonal' : 'text'"
+        :color="view === item.key ? 'cyan' : 'white'"
+        class="mx-1"
+      >
+        {{ item.label }}
+      </v-btn>
+    </v-app-bar>
 
-    <VMain class="ma-5" > 
-      <RouterView v-slot="{ Component, route}"> 
-        <transition :name="route.meta.transition || 'fade'" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </RouterView>
-    </VMain>
-
-  </VApp>
-  
+    <v-main>
+      <HomeView v-if="view === 'home'" @start="view = 'dash'" />
+      <DashboardView v-if="view === 'dash'" />
+      <AnalysisView v-if="view === 'analysis'" />
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
-  import { RouterView } from 'vue-router'
-  import NavBar from '@/components/NavBar.vue';
- 
+import { ref } from 'vue'
+import HomeView from './views/Home.vue'
+import DashboardView from './views/Dashboard.vue'
+import AnalysisView from './views/Analysis.vue'
+
+const view = ref('home')
+const navItems = [
+  { key: 'home', label: 'Home' },
+  { key: 'dash', label: 'Dashboard' },
+  { key: 'analysis', label: 'Analysis' },
+]
 </script>
-
-<style>
- /* Slide right page transition */
- .slide-enter-active,
-  .slide-leave-active {
-  transition: opacity 0.5s, transform 0.5s;
-  }
-
-  .slide-enter-from,.slide-leave-to {
-  opacity: 0; 
-  }
-
-  .slide-enter-to,.slide-leave-from {
-  opacity: 1;
-  transform: translateX(10px);
-  }
-
-  /* Fade page transition */
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: opacity 0.3s ease;
-  }
-
-  .fade-enter-from ,
-  .fade-leave-to {
-  opacity: 0;
-  }
-
-
-  /* Bounce */
-  .bounce-enter-active {
-    animation: bounce-in 0.5s;
-  }
-  .bounce-leave-active {
-    animation: bounce-in 0.5s reverse;
-  }
-  @keyframes bounce-in {
-    0% {
-      transform: scale(0);
-    }
-    50% {
-      transform: scale(1.25);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  /*
-    Enter and leave animations can use different
-    durations and timing functions.
-  */
-  .slide-fade-enter-active {
-    transition: all 0.3s ease-out;
-  }
-
-  .slide-fade-leave-active {
-    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-  }
-
-  .slide-fade-enter-from,
-  .slide-fade-leave-to {
-    transform: translateX(20px);
-    opacity: 0;
-  }
-  </style>

@@ -1,82 +1,39 @@
 <template>
-  
-  <VContainer class="fill-height ">
-    <VResponsive class="align-center text-center fill-height">
-      <VImg height="350" class="mb-5" src="@/assets/logo.svg" />
-
-      <div class="text-body-2 font-weight-light mb-n1">Welcome to</div>
-
-      <h1 class="text-h2 font-weight-bold">IoT Development Platform</h1>
-      <div class="text-body-1 font-weight-light mt-1">Internet of Things</div>
- 
-
-      <div class="py-14" />
-
-      <VRow class="d-flex align-center justify-center">
-        <VCol cols="auto">
-          <VBtn
-            href="https://vuetifyjs.com/components/all/"
-            min-width="164"
-            rel="noopener noreferrer"
-            target="_blank"
-            variant="text"
-          >
-            <VIcon icon="mdi-view-dashboard" size="large" start />
-
-            Components
-          </VBtn>
-        </VCol>
-
-        <VCol cols="auto">
-          <VBtn
-            color="primary"
-            href="https://vuetifyjs.com/introduction/why-vuetify/#feature-guides"
-            min-width="228"
-            rel="noopener noreferrer"
-            size="x-large"
-            target="_blank"
-            variant="flat"
-          >
-            <VIcon icon="mdi-speedometer" size="large" start />
-
-            Get Started
-          </VBtn>
-        </VCol>
-
-        <VCol cols="auto">
-          <VBtn
-            href="https://community.vuetifyjs.com/"
-            min-width="164"
-            rel="noopener noreferrer"
-            target="_blank"
-            variant="text"
-          >
-            <VIcon icon="mdi-account-group" size="large" start />
-
-            Community
-          </VBtn>
-        </VCol>
-      </VRow>
-    </VResponsive>
-  </VContainer>
-
+  <div class="home-container">
+    <div class="weather-animation">
+      <div class="sun"></div>
+      <div class="orbit">
+        <div class="cloud">☁️</div>
+        <div class="rain">💧</div>
+      </div>
+    </div>
+    <h1 class="glitch-text">STATION 620171757</h1>
+    <p class="subtitle">Next-Gen Environmental Monitoring</p>
+    <v-btn size="x-large" color="cyan" variant="outlined" @click="$emit('start')" class="mt-8">
+      Enter Dashboard
+    </v-btn>
+  </div>
 </template>
 
-<script setup>
-  import { storeToRefs } from 'pinia';
-  import { useMqttStore } from '@/store/mqttStore';
-  import { ref,reactive, watch, onMounted, onBeforeUnmount } from 'vue';
+<style scoped>
+.home-container {
+  height: 90vh; display: flex; flex-direction: column; 
+  align-items: center; justify-content: center; background: radial-gradient(circle, #0a192f 0%, #000 100%);
+}
+.weather-animation { position: relative; width: 200px; height: 200px; margin-bottom: 40px; }
+.sun { 
+  width: 80px; height: 80px; background: #ffcc00; border-radius: 50%; 
+  position: absolute; top: 60px; left: 60px; box-shadow: 0 0 50px #ffcc00;
+}
+.orbit {
+  width: 100%; height: 100%; border: 1px dashed rgba(0, 255, 255, 0.2);
+  border-radius: 50%; animation: rotate 10s linear infinite;
+}
+.cloud, .rain { position: absolute; font-size: 2rem; }
+.cloud { top: -10px; left: 50%; }
+.rain { bottom: -10px; left: 50%; }
 
-
-// VARIABLES
-
-
-// FUNCTIONS
-onMounted(()=>{
-   
-});
-
-onBeforeUnmount(()=>{ 
-  
-});
-</script>
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.glitch-text { font-family: 'Orbitron', sans-serif; font-size: 3rem; color: #00f2ff; letter-spacing: 5px; }
+.subtitle { color: #8892b0; margin-top: 10px; }
+</style>
