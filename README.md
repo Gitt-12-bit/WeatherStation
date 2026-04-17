@@ -1,103 +1,215 @@
-# Internet of Things (IoT) Template - Home Automation and Analysis
+# IoT Weather Station with Remote Monitoring
 
-### Description
-The Hardware component has two tasks: (1) Implement a remote authentication sub-system as part of a Home Automation System, for the main entrance of a Smart Home. This enables home owners to grant temporary access to their home, by providing their guest with a 4 digit passcode. Subsequently, the pin can be change remotely, after the guest leaves. (2) A real-time water management sub-system for the Home Automation System, to monitor the water levels of a 1000 US Gal storage tank located on the compound.
+## Description
+The aim of this project is to design and implementation of an IoT-based Weather Station with remote monitoring capabilities. The system integrates an embedded hardware unit, a backend server, and a web-based graphical user interface (GUI) to display, and analyze the environmental data collected via the sensors.
 
-The Backend component also has two tasks: (1) Store data sent via HTTP POST request from the Arduino Nano in a database. This database should adhere to a specified schema. (2) Facilitate the access of stored data by the hardware and frontend. This should be accomplished through the implementation of API routes on the frontend and HTTP GET request from the hardware (ESP32) component.
+The system is divided into three major components: Hardware, Backend, and Frontend.
 
-The Frontend component is tasked with: (1) Provide a User Interface (UI), on a webpage, for setting a 4 digit passcode used by the Remote authentication system’s hardware component to control access at the main entrance. (2) Provide a user interface (UI), on a webpage, featuring charts and graphs to display real-time status of the Water Management System. (3) Another webpage, which should integrate a visual representation, such as a chart or graph, extracting trends and illustrating any correlation among variables, from data stored in the database.  
+---
 
+## Hardware Component
+The hardware system is responsible for:
 
-# Hardware Setup
-Download and install [Arduino](https://www.arduino.cc/en/software) IDE. Subsequently, install the following Arduino IDE libraries following the tutorial [here](https://support.arduino.cc/hc/en-us/articles/5145457742236-Add-libraries-to-Arduino-IDE):
-1. Adafruit GFX Library by Adafruit
-2. Adafruit ILI9341 by Adafruit
-3. ArduinoJson by Benoît Blanchon
-4. PubSubClient by Nick O’Leary
-5. NewPing by Tim Eckel
-6. esp32 by Espressif Systems, from the Board Manager tab in the Arduino IDE
+- Reading and processing environmental data from sensors:
+  - Air Temperature  
+  - Humidity  
+  - Atmospheric Pressure  
+  - Altitude  
+  - Heat Index  
+  - Soil Moisture  
 
+- Displaying real-time sensor data on a TFT display
+- Transmitting sensor data via WiFi using MQTT
 
+### Hardware Components
+- ESP32 
+- BMP280 Sensor (Pressure & Altitude)  
+- DHT Sensor (Temperature, Heat Index & Humidity)  
+- Soil Moisture Sensor (Soil Moisture)
+- TFT Display (ILI9341)  
+- Breadboard prototype / Final PCBed System
 
-# Backend Setup
-Always ensure to establish a virtual environment and install the necessary packages from your requirements file if you haven't already done so. Following that, activate your virtual environment and proceed to run your Flask API.
+---
 
-**The commands below must be executed from a command line terminal in the homeautomation/backend/ folder**
-### Create a virtual environment
+## Backend Component (Flask API + MongoDB Database)
 
-Windows 
+The backend system is responsible for:
+
+- Receiving sensor data from the hardware (MQTT / HTTP)
+- Processing and storing the data in a MongoDB database
+- Providing API endpoints for data access
+- Facilitating communication between hardware and frontend
+
+---
+
+## Frontend Component (Web GUI)
+
+The frontend system is responsible for:
+
+- Providing a user-friendly graphical interface
+- Fetching data from backend through APIs
+- Displaying real-time and historical data
+- Rendering charts and tables
+- Auto-refreshing data to show realtime updates
+- Providing unit conversion abilities on database data
+
+---
+
+## Hardware Setup
+
+Download and install Arduino IDE:  
+https://www.arduino.cc/en/software  
+
+### Required Libraries
+Install the following libraries via the Arduino IDE:
+
+1. Adafruit GFX Library  
+2. Adafruit ILI9341  
+3. Adafruit BMP280  
+4. DHT Sensor Library  
+5. WiFi (ESP32)  
+6. PubSubClient  
+7. ArduinoJson  
+
+---
+
+## Backend Setup (Flask API)
+
+### Navigate to backend folder
 ```sh
-python -m venv env  
+cd backend
 ```
-Linux
+
+### Create virtual environment
+Windows:
 ```sh
-python3 -m venv env  
+python -m venv env
 ```
+
+Linux:
+```sh
+python3 -m venv env
+```
+
 ### Activate virtual environment
-Windows
+Windows:
 ```sh
-.\env\Scripts\activate 
+.\env\Scripts\activate
 ```
-Linux
+
+Linux:
 ```sh
 source env/bin/activate
 ```
-### Install API requirements in the virtual environment
-```sh
-pip install -r requirements.txt 
-```
-### Create **.env** file
-Create a **.env** file in the backend/ folder to store the application's environment variables. 
-Refer to the lab manual for the specific information that must be added to this file. Subsequently, modify the **FLASK_RUN_HOST** variable found in this file from localhost to the IP address of the computer your backend is running on.
 
-### Start Flask API
-Windows
+### Install dependencies
 ```sh
-py run.py 
+pip install -r requirements.txt
 ```
-Linux
+
+### Create `.env` file
+Create a `.env` file in the backend folder and include:
+
+```env
+FLASK_RUN_HOST=<your-ip-address>
+```
+
+Also include:
+- Database credentials  
+- MQTT broker configuration  
+
+### Run Flask API
+Windows:
+```sh
+py run.py
+```
+
+Linux:
 ```sh
 python3 run.py
 ```
 
+---
 
+## Frontend Setup (Vue + Vuetify + Vite)
 
-# Frontend Setup ( [Vue js](https://vuejs.org/), [Vuetify](https://vuetifyjs.com/en/components/all/), [Vite](https://vitejs.dev/))
-### Recommended IDE Setup
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
+### Navigate to frontend folder
+```sh
+cd frontend
+```
 
-Customize configuration
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-
-### In a command line terminal, execute the first commands in the homeautomation/frontend/ folder to initiate the dev server for the initial setup. 
-### For all subsequent instances, only run the second command to start the dev server.
-### Once development is complete, run the final command to generate production files. Please be aware that the generation of production files is not part of this course.
-
-Project Setup
+### Install dependencies
 ```sh
 npm install
 ```
 
-Run dev server (Compile and Hot-Reload for Development)
+### Run development server
 ```sh
 npm run dev
 ```
 
-Create a production bundle (Compile and Minify for Production)
+### Build for production
 ```sh
 npm run build
 ```
 
+---
 
-### Modify **vite.config.js** file
-Modify the target in the proxy object found in the **frontend/vite.config.js** file shown in the code block below. Change localhost in the string to the IP address of the computer your backend is running on.
+### 🔧 Modify `vite.config.js`
 ```js
 proxy: {
-      '^/api*': { 
-        target: 'http://localhost:8080/' ,
-       changeOrigin: false,
-    },   
-  }
-
+  '^/api*': { 
+    target: 'http://<your-ip-address>:8080/',
+    changeOrigin: false,
+  },   
+}
 ```
+
+---
+
+## System Workflow
+
+1. Sensors collect environmental data  
+2. ESP32 processes the data  
+3. Data is displayed on the TFT screen  
+4. Data is transmitted via WiFi using MQTT  
+5. Backend receives and stores data in the database  
+6. Frontend fetches data via API  
+7. GUI displays real-time and historical data  
+
+---
+
+## Key Features
+
+- Real-time environmental monitoring  
+- Wireless communication (WiFi + MQTT)  
+- Real-time TFT display of data
+- Web-based dashboard with charts and tables  
+- Auto-refresh on webpage
+- Database storage and retrieval  
+- Clean and modular architecture  
+
+---
+
+## Final System
+
+The completed system includes:
+
+- Fully assembled and packaged Weather Station
+- Functional backend and database  
+- Interactive web-based GUI  
+- Complete IoT pipeline:
+  Sensors → ESP32 → MQTT → Backend → Database → API → Frontend  
+---
+
+## Deliverables
+
+- Breadboard Prototype (Sensors + TFT)  
+- Data Transmission System (WiFi + MQTT)  
+- Backend API and Database  
+- Web-Based GUI  
+- Fully Packaged PCB System  
+- PowerPoint Presentation on Product   
+- Final Technical Report  
+
+---
