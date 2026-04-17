@@ -218,7 +218,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import Chart from 'chart.js/auto';
 
-const API_BASE = 'http://10.194.108.105:8080';
+const API_BASE = 'http://10.229.210.105:8080';
 const MAX_HISTORY = 60;
 
 const latest  = ref({});

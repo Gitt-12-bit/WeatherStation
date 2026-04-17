@@ -78,7 +78,7 @@
 import { ref, computed, onUnmounted } from 'vue';
 import Chart from 'chart.js/auto';
 
-const API_BASE = 'http://10.194.108.105:8080';
+const API_BASE = 'http://10.229.210.105:8080';
 const start = ref('');
 const end = ref('');
 const dataRows = ref([]);

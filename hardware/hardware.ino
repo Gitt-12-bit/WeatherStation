@@ -51,7 +51,7 @@ static uint16_t    mqtt_port   = 1883;
 
 // ── WIFI ───────────────────────────────
 const char* ssid      = "Galaxyy";
-const char* backendIP = "10.194.108.105";
+const char* backendIP = "10.229.210.105";
 enum WiFiState { WIFI_CONNECTED, WIFI_WAITING, WIFI_RECONNECTING };
 static WiFiState wifiState        = WIFI_CONNECTED;
 static unsigned long lastWifiCheck   = 0;
